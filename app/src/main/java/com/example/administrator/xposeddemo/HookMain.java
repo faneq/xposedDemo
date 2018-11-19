@@ -38,7 +38,7 @@ public class HookMain implements IXposedHookLoadPackage {
     @SuppressLint("PrivateApi")
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
-        Log.e("hookMain", "----执行hookMain：" + SystemUtil.getSystemLanguage());
+        Log.e("hookMain", "----执行1hookMain：" + SystemUtil.getSystemLanguage());
         //这里测试Hook静态变量,修改手机机型和厂商
 //        XposedHelpers.setStaticObjectField(android.os.Build.class, "BRAND", "醉猫");//厂商
 //        XposedHelpers.setStaticObjectField(android.os.Build.class, "MODEL", "bestmk.cn");//机型
