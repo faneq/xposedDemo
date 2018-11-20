@@ -41,16 +41,40 @@ public class HookMain implements IXposedHookLoadPackage {
         Log.e("hookMain", "----执行1hookMain：" + SystemUtil.getSystemLanguage());
         //这里测试Hook静态变量,修改手机机型和厂商
 //        XposedHelpers.setStaticObjectField(android.os.Build.class, "BRAND", "醉猫");//厂商
-//        XposedHelpers.setStaticObjectField(android.os.Build.class, "MODEL", "bestmk.cn");//机型
+        XposedHelpers.setStaticObjectField(android.os.Build.class, "MODEL", "醉猫");//机型
 //        XposedHelpers.setStaticObjectField(android.os.Build.VERSION.class, "RELEASE", "9.2.0");//机型
-        Class clazz = null;
-        try {
-            clazz = Class.forName("android.os.SystemProperties");
-            HookMethod(clazz, "get", "假数据");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        if (!lpparam.packageName.equals("com.snail.device")) {
+            return;
         }
-        readData();
+        try {
+            XposedHelpers.findAndHookMethod("android.os.SystemProperties",
+                    lpparam.classLoader, "native_get", String.class, new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            Log.e("hookMain", "----------------" + param.args[0]);
+                            if (param.args[0].equals("ro.serialno")) {
+                                param.setResult("native_get_huawei-huawei");
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+        }
+        try {
+
+            XposedHelpers.findAndHookMethod("android.os.SystemProperties",
+                    lpparam.classLoader, "get", String.class, new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            Log.e("hookMain", "----------------2" + param.args[0]);
+                            if (param.args[0].equals("ro.serialno")) {
+                                param.setResult("get-gethuawei-huawei");
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+        }
+
+//       readData();
     }
 
     private void readData() {
@@ -234,6 +258,143 @@ public class HookMain implements IXposedHookLoadPackage {
 ////            } catch (Throwable th6) {
 ////            }
 ////        }
+
+//        ------------------------------------------------------------------------
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getDeviceId", GetCatValue("imei"));
+//        HTool.XHookMethod("com.android.internal.telephony.PhoneSubInfo",mLpp.classLoader, "getDeviceId", GetCatValue("imei"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getSubscriberId", GetCatValue("imsi"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getLine1Number", GetCatValue("number"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getSimSerialNumber", GetCatValue("simserial"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getSimCountryIso", GetCatValue("simcountryiso"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getSimOperator", GetCatValue("simoperator"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getSimOperatorName", GetCatValue("simoperatorname"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getNetworkCountryIso", GetCatValue("networkcountryiso"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getNetworkOperator", GetCatValue("networkoperator"));
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getNetworkOperatorName", GetCatValue("networkoperatorname"));
+//
+////WIFI信息
+//        HTool.XHookMethod(android.net.wifi.WifiInfo.class.getName(),mLpp.classLoader, "getMacAddress", GetCatValue("wifimac"));
+//        HTool.XHookMethod(android.net.wifi.WifiInfo.class.getName(),mLpp.classLoader, "getBSSID", GetCatValue("bssid"));
+//        HTool.XHookMethod(android.net.wifi.WifiInfo.class.getName(),mLpp.classLoader, "getSSID", "\""+GetCatValue("ssid")+"\"");
+//        XposedHelpers.findAndHookMethod(java.net.NetworkInterface.class.getName(),mLpp.classLoader, "getHardwareAddress", new Object[] {
+//                new XC_MethodHook()
+//                {
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable
+//                    {
+//                        //每个安卓系统中 至少存在5个以上的MAC地址
+//                        //但大多数软件只修改了MAC和BSSID
+//                        //真正的MAC修改是在此处理函数中监听每次访问.
+//                    }
+//                }});
+//
+////蓝牙信息
+//        HTool.XHookMethod(BluetoothAdapter.class.getName(),mLpp.classLoader,"getAddress", GetCatValue("bluemac"));
+//        HTool.XHookMethod(BluetoothAdapter.class.getName(),mLpp.classLoader, "getName", GetCatValue("bluename"));
+//
+////设置手机信息 无论手机是否插入了sim卡 都会模拟出SIM卡的信息 APP获得SIM卡消息时返回该手机已有SIM卡
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getPhoneType", TelephonyManager.PHONE_TYPE_GSM);
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getNetworkType", TelephonyManager.NETWORK_TYPE_HSPAP);
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "getSimState", TelephonyManager.SIM_STATE_READY);
+//        HTool.XHookMethod(android.telephony.TelephonyManager.class.getName(),mLpp.classLoader, "hasIccCard", true);
+//
+//
+////修改手机系统信息 此处是手机的基本信息 包括厂商 信号 ROM版本 安卓版本 主板 设备名 指纹名称等信息
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "MODEL", GetCatValue("model"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "MANUFACTURER", GetCatValue("manufacturer"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "BRAND", GetCatValue("brand"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "HARDWARE", GetCatValue("hardware"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "BOARD", GetCatValue("board"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "SERIAL", GetCatValue("serial"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "DEVICE", GetCatValue("device"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "ID", GetCatValue("id"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "PRODUCT", GetCatValue("product"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "DISPLAY", GetCatValue("display"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.class, "FINGERPRINT", GetCatValue("fingerprint"));
+//
+//        XposedHelpers.findAndHookMethod("android.os.SystemProperties",mLpp.classLoader, "native_get", new Object[] {String.class,String.class,
+//                new XC_MethodHook()
+//                {
+//                    //为了防止某些APP跳过Build类 而直接使用SystemProperties.native_get获得参数
+//                }});
+////修改系统版本 我看到世面上的软件基本上都是不能修改系统版本的 从而造成了刷量后 很多渠道最终会显示你的APP用户全部使用的某一系统版本
+////这样的话数据就太假了.
+//        XposedHelpers.setStaticObjectField(android.os.Build.VERSION.class, "RELEASE", GetCatValue("version"));
+//        XposedHelpers.setStaticObjectField(android.os.Build.VERSION.class, "SDK", GetCatValue("apilevel"));
+//
+//        HTool.XHookMethod(android.os.Build.class.getName(),mLpp.classLoader, "getRadioVersion", GetCatValue("radioversion"));
+//
+////修改为指定的运营商mnc mcc信息
+//        XposedHelpers.findAndHookMethod(android.content.res.Resources.class.getName(),mLpp.classLoader, "getConfiguration", new Object[] {
+//                new XC_MethodHook()
+//                {
+//            ...........................
+//                    //此处的mnc和mcc必须和系统中其他关于运营商的数据对应!
+//                }});
+//
+////修改ANDROID_ID
+//        XposedHelpers.findAndHookMethod(android.provider.Settings.Secure.class.getName(),mLpp.classLoader, "getString",
+//                new Object[] {ContentResolver.class,String.class,
+//                        new XC_MethodHook()
+//                        {
+//            ...............................
+//                            //此处会根据传入的String参数 判断返回值 其中包括比较关键的数据就是android_id
+//                        }});
+//
+////防止APP使用Runtime.exec方式获取一些特定的系统属性
+//        XposedHelpers.findAndHookMethod(Runtime.class.getName(),mLpp.classLoader, "exec",new Object[] {String.class,String[].class, File.class,
+//                new XC_MethodHook()
+//                {
+//                    //一些APP从JAVA层获得到了数据 还会从shell(native)层获得一些更底层的数据 来判断用户的合法性
+//                    //经常用到的有 cat、getprop、ifconfig等等命令，当exec执行这些命令后 往往会返回一些手机的真实信息
+//                    //因为框架和处理方式不同，...部分此处根据自己需求，编写重定向返回值的过程...
+//                }});
+//
+////修改位置信息
+//        XposedHelpers.findAndHookMethod(LocationManager.class.getName(),mLpp.classLoader, "getLastKnownLocation",
+//                new Object[] {String.class,
+//                        new XC_MethodHook()
+//                        {
+//                ..........................
+//                            //返回预先设置好的经纬度信息以伪装地理位置
+//                        }});
+//
+//        HTool.XHookMethod(Location.class.getName(),mLpp.classLoader, "getLatitude", latitude);
+//        HTool.XHookMethod(Location.class.getName(),mLpp.classLoader, "getLongitude", longitude);
+//
+//
+////修改GSM制式手机的基站信息
+//        HTool.XHookMethod(android.telephony.gsm.GsmCellLocation.class.getName(),mLpp.classLoader, "getLac", GsmLac);
+//        HTool.XHookMethod(android.telephony.gsm.GsmCellLocation.class.getName(),mLpp.classLoader, "getCid", GsmCid);
+//
+//
+////修改CDMA制式手机的基站信息
+//        HTool.XHookMethod(android.telephony.cdma.CdmaCellLocation.class.getName(),mLpp.classLoader, "getBaseStationLatitude", CdmaLatitude);
+//        HTool.XHookMethod(android.telephony.cdma.CdmaCellLocation.class.getName(),mLpp.classLoader, "getBaseStationLongitude", CdmaLongitude);
+//        HTool.XHookMethod(android.telephony.cdma.CdmaCellLocation.class.getName(),mLpp.classLoader, "getBaseStationId", CdmaBid);
+//        HTool.XHookMethod(android.telephony.cdma.CdmaCellLocation.class.getName(),mLpp.classLoader, "getSystemId", CdmaSid);
+//        HTool.XHookMethod(android.telephony.cdma.CdmaCellLocation.class.getName(),mLpp.classLoader, "getNetworkId", CdmaNid);
+//
+//
+////模拟手机的APP列表
+//        XposedHelpers.findAndHookMethod("android.app.ApplicationPackageManager",mLpp.classLoader, "getInstalledPackages",new Object[] {int.class,
+//                new XC_MethodHook()
+//                {
+//                    //此处模拟正常用户的APP列表 其中随机的增加和删除一些常用APP 以达到每个手机的APP有很大的随意性和合理性
+//                }});
+//
+//        XposedHelpers.findAndHookMethod("android.app.ApplicationPackageManager",mLpp.classLoader, "getInstalledApplications",new Object[] {int.class,
+//                new XC_MethodHook()
+//                {
+//                    //此处模拟正常用户的APP列表 其中随机的增加和删除一些常用APP 以达到每个手机的APP有很大的随意性和合理性
+//                }});
+//
+////防止APP的VPN SOCK5 HTTP代理检测
+//        XposedHelpers.findAndHookMethod(java.net.NetworkInterface.class.getName(),mLpp.classLoader, "getNetworkInterfacesList",new Object[] {
+//                new XC_MethodHook()
+//                {
+//            ........................................
+//                    //此处对于一些连接信息 对JAVA做了隐藏处理 但对于系统和Native层依然是可见的 所以APP不会检测到代理 但代理却可以正常的运行...
+//                }});
     }
 
     private void HookMethod(Class cl, String method, final String result) {
